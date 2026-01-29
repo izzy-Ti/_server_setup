@@ -18,12 +18,12 @@ var ENV = initConfig()
 
 func initConfig() config {
 	return config{
-		PublicHost: getEnv("PUBLIC_HOST", "http://localhost"),
-		Port:       getEnv("PORT", "8080"),
-		DBuser:     getEnv("DB_USER", "root"),
-		DBPassword: getEnv("DB_PASSWORD", "password"),
+		PublicHost: getEnv("PUBLIC_HOST", "http://localhost:3306/"),
+		Port:       getEnv("PORT", "3306"),
+		DBuser:     getEnv("DB_USER", "Golang"),
+		DBPassword: getEnv("DB_PASSWORD", "0911700417"),
 		DBAddress:  fmt.Sprintf("%s:%s", getEnv("DB_HOST", "127.0.0.1"), getEnv("DB_PORT", "3306")),
-		DBName:     getEnv("DB_NAME", "exom"),
+		DBName:     getEnv("DB_NAME", "Golang"),
 	}
 }
 
