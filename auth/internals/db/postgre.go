@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/izzy-Ti/_server_setup/auth/internals/auth"
+	"github.com/izzy-Ti/_server_setup/auth/internals/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -22,9 +22,8 @@ func Connect() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 }
-
 func Migrate() {
-	err := DB.AutoMigrate(&auth.User{})
+	err := DB.AutoMigrate(&models.User{})
 	if err != nil {
 		log.Fatal("Migration failed:", err)
 	}
