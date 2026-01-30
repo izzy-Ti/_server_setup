@@ -23,7 +23,7 @@ func (h *Handler) handLogin(w http.ResponseWriter, r *http.Request) {
 }
 func (h *Handler) handRegister(w http.ResponseWriter, r *http.Request) {
 	var payload types.RegisterPayload
-	if err := utils.parseJSON(r.Body, payload); err != nil {
+	if err := utils.ParseJSON(r, payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 	}
 }
