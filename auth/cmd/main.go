@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 
@@ -12,11 +11,7 @@ import (
 
 func main() {
 	_ = godotenv.Load()
-	conn, err := db.Connect()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close(context.Background())
+	db.Connect()
 
 	handler := server.New()
 	log.Println("listening on :8080")
