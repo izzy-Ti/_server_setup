@@ -1,4 +1,4 @@
-module github.com/izzy-Ti/_server_setup/tree/main/auth
+module github.com/izzy-Ti/_server_setup/auth
 
 go 1.25.6
 
