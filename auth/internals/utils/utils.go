@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 func ParseJSON(r *http.Request, payload any) error {
@@ -19,4 +20,7 @@ func WriteJson(w http.ResponseWriter, status int, v any) error {
 }
 func WriteError(w http.ResponseWriter, status int, err error) {
 	WriteJson(w, status, map[string]string{"error": err.Error()})
+}
+func IsProd() bool {
+	return os.Getenv("APP_ENV") == "production"
 }
