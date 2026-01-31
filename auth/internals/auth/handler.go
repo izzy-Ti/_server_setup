@@ -17,6 +17,10 @@ type RegisterRequest struct {
 	Email    string `json: "Email"`
 	Password string `json: "Password"`
 }
+type LoginRequest struct {
+	Email    string `json: "Email"`
+	Password string `json: "Password"`
+}
 type RegisterResponse struct {
 	Token string `json:"Token"`
 }
@@ -55,5 +59,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := RegisterResponse{Token: tokenString}
 	utils.WriteJson(w, http.StatusOK, resp)
+
+}
+func Login(w http.ResponseWriter, r *http.Request) {
+	var req LoginRequest
+	err := utils.ParseJSON(r, &req)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
 
 }
