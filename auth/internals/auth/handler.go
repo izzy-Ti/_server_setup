@@ -21,11 +21,8 @@ type LoginRequest struct {
 	Email    string `json: "Email"`
 	Password string `json: "Password"`
 }
-type RegisterResponse struct {
-	Token string `json:"Token"`
-}
-type LoginResponse struct {
-	Token string `json:"Token"`
+type Response struct {
+	message string `json:"Token"`
 }
 
 var jwtSecret = []byte(os.Getenv("JWT_KEY"))
@@ -56,11 +53,24 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	})
 	tokenString, err := token.SignedString(jwtSecret)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		HttpOnly: utils.IsProd(),
+		SameSite: func() http.SameSite {
+			if utils.IsProd() {
+				return http.SameSiteStrictMode
+			}
+			return http.SameSiteLaxMode
+		}(),
+		Path:    "/",
+		Expires: time.Now().Add(24 * time.Hour),
+	})
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
-	resp := RegisterResponse{Token: tokenString}
+	resp := Response{message: "Registration successful"}
 	utils.WriteJson(w, http.StatusOK, resp)
 
 }
@@ -92,8 +102,21 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
-	resp := LoginResponse{
-		Token: tokenString,
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		HttpOnly: utils.IsProd(),
+		SameSite: func() http.SameSite {
+			if utils.IsProd() {
+				return http.SameSiteStrictMode
+			}
+			return http.SameSiteLaxMode
+		}(),
+		Path:    "/",
+		Expires: time.Now().Add(24 * time.Hour),
+	})
+	resp := Response{
+		message: "login Successfully",
 	}
 	utils.WriteJson(w, http.StatusOK, resp)
 
