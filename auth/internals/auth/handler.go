@@ -24,6 +24,9 @@ type LoginRequest struct {
 type RegisterResponse struct {
 	Token string `json:"Token"`
 }
+type LoginResponse struct {
+	Token string `json:"Token"`
+}
 
 var jwtSecret = []byte(os.Getenv("JWT_KEY"))
 
@@ -68,5 +71,30 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
+	var user models.User
+	if err := db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	if err := bcrypt.CompareHashAndPassword(
+		[]byte(user.Password),
+		[]byte(req.Password),
+	); err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+		"user_id": user.ID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	})
+	tokenString, err := token.SignedString(jwtSecret)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	resp := LoginResponse{
+		Token: tokenString,
+	}
+	utils.WriteJson(w, http.StatusOK, resp)
 
 }
