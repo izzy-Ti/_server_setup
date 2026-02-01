@@ -22,7 +22,7 @@ type LoginRequest struct {
 	Password string `json: "Password"`
 }
 type Response struct {
-	message string `json:"Token"`
+	Message string `json:"Token"`
 }
 
 var jwtSecret = []byte(os.Getenv("JWT_KEY"))
@@ -70,7 +70,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
-	resp := Response{message: "Registration successful"}
+	resp := Response{Message: "Registration successful"}
 	utils.WriteJson(w, http.StatusOK, resp)
 
 }
@@ -93,7 +93,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusUnauthorized, err)
 		return
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	})
@@ -115,9 +115,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Path:    "/",
 		Expires: time.Now().Add(24 * time.Hour),
 	})
+	res := "login Successfully"
 	resp := Response{
-		message: "login Successfully",
+		Message: res,
 	}
 	utils.WriteJson(w, http.StatusOK, resp)
-
 }
