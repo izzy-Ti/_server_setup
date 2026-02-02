@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -32,6 +33,12 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	err := utils.ParseJSON(r, &req)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+	var userModel models.User
+	UserEmail := db.DB.Where("email = ?", req.Email).First(&userModel).Error
+	if UserEmail == nil {
+		utils.WriteJson(w, http.StatusUnauthorized, "Email already exists")
 		return
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -70,6 +77,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
+	if err := utils.SendWelcomeEmail(req.Email, req.Name, tokenString); err != nil {
+		log.Println("Email send failed:", err)
+		return
+	}
+
 	resp := Response{Message: "Registration successful"}
 	utils.WriteJson(w, http.StatusOK, resp)
 
