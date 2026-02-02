@@ -7,6 +7,7 @@ import (
 	"github.com/izzy-Ti/_server_setup/auth/internals/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -16,7 +17,7 @@ func Connect() {
 	dsn := os.Getenv("DATABASE_URL")
 	log.Println("db connected")
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Discard})
 
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
