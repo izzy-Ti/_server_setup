@@ -41,6 +41,6 @@ func SendWelcomeEmail(to, name, token string) error {
         <p>If this wasn’t you, please ignore this email.</p>
     `, name, verificationUrl))
 
-	d := gomail.NewDialer("smtp.gmail.com", 587, os.Getenv("EMAIL"), os.Getenv("PASSWORD"))
+	d := gomail.NewDialer("smtp.gmail.com", 465, os.Getenv("EMAIL"), os.Getenv("PASSWORD"))
 	return d.DialAndSend(m)
 }

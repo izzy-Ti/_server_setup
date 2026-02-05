@@ -60,6 +60,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	})
 	tokenString, err := token.SignedString(jwtSecret)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    tokenString,
