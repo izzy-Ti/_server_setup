@@ -137,7 +137,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.WriteJson(w, http.StatusOK, resp)
 }
-func logout(w http.ResponseWriter, r *http.Request)        {}
+func Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "token",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	utils.WriteJson(w, http.StatusOK, "Logout successfull")
+}
 func sendVerifyOTP(w http.ResponseWriter, r *http.Request) {}
 func verifyOTP(w http.ResponseWriter, r *http.Request)     {}
 func isAuth(w http.ResponseWriter, r *http.Request)        {}
