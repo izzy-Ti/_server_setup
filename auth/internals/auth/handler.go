@@ -137,3 +137,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.WriteJson(w, http.StatusOK, resp)
 }
+func logout(w http.ResponseWriter, r *http.Request)        {}
+func sendVerifyOTP(w http.ResponseWriter, r *http.Request) {}
+func verifyOTP(w http.ResponseWriter, r *http.Request)     {}
+func isAuth(w http.ResponseWriter, r *http.Request)        {}
+func sendResetOTP(w http.ResponseWriter, r *http.Request)  {}
+func resetPassword(w http.ResponseWriter, r *http.Request) {}
+func getUserData(w http.ResponseWriter, r *http.Request)   {}
+func updateProfile(w http.ResponseWriter, r *http.Request) {}
+func googleAuth(w http.ResponseWriter, r *http.Request)    {}
