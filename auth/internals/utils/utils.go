@@ -4,10 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/izzy-Ti/_server_setup/auth/internals/db"
+	"github.com/izzy-Ti/_server_setup/auth/internals/models"
 	"gopkg.in/gomail.v2"
 )
 
@@ -67,4 +72,31 @@ func UserId(tokenStr string) (string, error) {
 	}
 
 	return userID, nil
+}
+func GetUserByID(userID string) (*models.User, error) {
+	var user models.User
+	if err := db.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+func GenerateOTP() string {
+	rand.Seed(time.Now().UnixNano())
+	return strconv.Itoa(100000 + rand.Intn(900000))
+}
+func SendOTPMail(to, name, otp string) error {
+	m := gomail.NewMessage()
+
+	m.SetHeader("FROM", os.Getenv("EMAIL"))
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", "Welcome! Please verify your email")
+	m.SetBody("text/html", fmt.Sprintf(`
+		<p>Hi %s,</p>
+		<p>Your one-time verification code is:</p>
+		<h2>%s</h2>
+		<p>This code will expire soon. Do not share it with anyone.</p>
+		<p>If you didn’t request this, you can ignore this email.</p>
+		`, name, otp))
+	d := gomail.NewDialer("smtp.gmail.com", 465, os.Getenv("EMAIL"), os.Getenv("PASSWORD"))
+	return d.DialAndSend(m)
 }

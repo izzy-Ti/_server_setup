@@ -146,7 +146,25 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	})
 	utils.WriteJson(w, http.StatusOK, "Logout successfull")
 }
-func sendVerifyOTP(w http.ResponseWriter, r *http.Request) {}
+func SendVerifyOTP(w http.ResponseWriter, r *http.Request) {
+	expiresAt := time.Now().Add(24 * time.Hour).UnixMilli()
+	token, err := r.Cookie("token")
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	userId, err := utils.UserId(token.Value)
+	user, err := utils.GetUserByID(userId)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	user.VerifyOTP = utils.GenerateOTP()
+	user.OTPExpireAt = int64(expiresAt)
+	db.DB.Save(user)
+
+	utils.SendOTPMail(user.Email, user.Name, user.VerifyOTP)
+}
 func verifyOTP(w http.ResponseWriter, r *http.Request)     {}
 func isAuth(w http.ResponseWriter, r *http.Request)        {}
 func sendResetOTP(w http.ResponseWriter, r *http.Request)  {}
