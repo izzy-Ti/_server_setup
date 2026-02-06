@@ -2,10 +2,12 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/golang-jwt/jwt/v5"
 	"gopkg.in/gomail.v2"
 )
 
@@ -43,4 +45,26 @@ func SendWelcomeEmail(to, name, token string) error {
 
 	d := gomail.NewDialer("smtp.gmail.com", 465, os.Getenv("EMAIL"), os.Getenv("PASSWORD"))
 	return d.DialAndSend(m)
+}
+func UserId(tokenStr string) (string, error) {
+	secret := os.Getenv("JWT_KEY")
+	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
+		if t.Method != jwt.SigningMethodHS256 {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte(secret), nil
+	})
+	if err != nil || !token.Valid {
+		return "", errors.New("invalid token")
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", errors.New("invalid claims")
+	}
+	userID, ok := claims["sub"].(string)
+	if !ok {
+		return "", errors.New("sub not found")
+	}
+
+	return userID, nil
 }
