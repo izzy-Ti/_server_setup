@@ -23,7 +23,7 @@ type LoginRequest struct {
 	Password string `json: "Password"`
 }
 type otpREQ struct {
-	otp string `json:"otp"`
+	Otp string `json:"otp"`
 }
 type Response struct {
 	Message string `json:"Token"`
@@ -182,13 +182,12 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
-
 	token, err := r.Cookie("token")
 	if err != nil {
 		utils.WriteError(w, http.StatusUnauthorized, err)
 		return
 	}
-	userId, err := utils.UserId(token.Value, jwtSecret)
+	userId, err := utils.UserId(token.Value, []byte(jwtSecret))
 	if err != nil {
 		utils.WriteError(w, http.StatusUnauthorized, err)
 		return
@@ -198,7 +197,7 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusUnauthorized, err)
 		return
 	}
-	if user.VerifyOTP != req.otp || user.VerifyOTP == "" {
+	if user.VerifyOTP != req.Otp || user.VerifyOTP == "" {
 		utils.WriteJson(w, http.StatusUnauthorized, "invalid otp")
 		return
 	}
