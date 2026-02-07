@@ -22,6 +22,9 @@ type LoginRequest struct {
 	Email    string `json: "Email"`
 	Password string `json: "Password"`
 }
+type otpREQ struct {
+	otp string `json:"otp"`
+}
 type Response struct {
 	Message string `json:"Token"`
 }
@@ -172,7 +175,44 @@ func SendVerifyOTP(w http.ResponseWriter, r *http.Request) {
 		"message": "OTP sent successfully",
 	})
 }
-func verifyOTP(w http.ResponseWriter, r *http.Request)     {}
+func VerifyOTP(w http.ResponseWriter, r *http.Request) {
+	var req otpREQ
+	err := utils.ParseJSON(r, &req)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := r.Cookie("token")
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	userId, err := utils.UserId(token.Value, jwtSecret)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	user, err := utils.GetUserByID(userId)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	if user.VerifyOTP != req.otp || user.VerifyOTP == "" {
+		utils.WriteJson(w, http.StatusUnauthorized, "invalid otp")
+		return
+	}
+	if user.OTPExpireAt < time.Now().UnixMilli() {
+		utils.WriteJson(w, http.StatusUnauthorized, "OTP expired")
+		return
+	}
+	user.VerifyOTP = ""
+	user.OTPExpireAt = 0
+	user.IsAccVerified = true
+	db.DB.Save(user)
+
+	utils.WriteJson(w, http.StatusOK, "OTP verified successfully")
+}
 func isAuth(w http.ResponseWriter, r *http.Request)        {}
 func sendResetOTP(w http.ResponseWriter, r *http.Request)  {}
 func resetPassword(w http.ResponseWriter, r *http.Request) {}
