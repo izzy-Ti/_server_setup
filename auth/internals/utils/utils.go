@@ -86,7 +86,7 @@ func GenerateOTP() string {
 func SendOTPMail(to, name, otp string) error {
 	m := gomail.NewMessage()
 
-	m.SetHeader("FROM", os.Getenv("EMAIL"))
+	m.SetHeader("From", os.Getenv("EMAIL"))
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", "Welcome! Please verify your email")
 	m.SetBody("text/html", fmt.Sprintf(`
