@@ -153,7 +153,11 @@ func SendVerifyOTP(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusUnauthorized, err)
 		return
 	}
-	userId, err := utils.UserId(token.Value)
+	userId, err := utils.UserId(token.Value, []byte(jwtSecret))
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
 	user, err := utils.GetUserByID(userId)
 	if err != nil {
 		utils.WriteError(w, http.StatusUnauthorized, err)
@@ -164,6 +168,9 @@ func SendVerifyOTP(w http.ResponseWriter, r *http.Request) {
 	db.DB.Save(user)
 
 	utils.SendOTPMail(user.Email, user.Name, user.VerifyOTP)
+	utils.WriteJson(w, http.StatusOK, map[string]string{
+		"message": "OTP sent successfully",
+	})
 }
 func verifyOTP(w http.ResponseWriter, r *http.Request)     {}
 func isAuth(w http.ResponseWriter, r *http.Request)        {}

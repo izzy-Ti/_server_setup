@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -51,29 +52,27 @@ func SendWelcomeEmail(to, name, token string) error {
 	d := gomail.NewDialer("smtp.gmail.com", 465, os.Getenv("EMAIL"), os.Getenv("PASSWORD"))
 	return d.DialAndSend(m)
 }
-func UserId(tokenStr string) (string, error) {
-	secret := os.Getenv("JWT_KEY")
+func UserId(tokenStr string, jwtSecret []byte) (uint, error) {
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
-		if t.Method != jwt.SigningMethodHS256 {
+		if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 			return nil, errors.New("unexpected signing method")
 		}
-		return []byte(secret), nil
+		return jwtSecret, nil
 	})
-	if err != nil || !token.Valid {
-		return "", errors.New("invalid token")
-	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return "", errors.New("invalid claims")
-	}
-	userID, ok := claims["sub"].(string)
-	if !ok {
-		return "", errors.New("sub not found")
+	if err != nil {
+		log.Println("Token parsing error:", err) // log the error for debugging
+		return 0, errors.New("invalid token")
 	}
 
-	return userID, nil
+	claims := token.Claims.(jwt.MapClaims)
+	userID, ok := claims["user_id"].(float64)
+	if !ok {
+		return 0, errors.New("sub not found")
+	}
+
+	return uint(userID), nil
 }
-func GetUserByID(userID string) (*models.User, error) {
+func GetUserByID(userID uint) (*models.User, error) {
 	var user models.User
 	if err := db.DB.Where("id = ?", userID).First(&user).Error; err != nil {
 		return nil, err
