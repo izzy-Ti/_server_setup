@@ -212,7 +212,9 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 
 	utils.WriteJson(w, http.StatusOK, "OTP verified successfully")
 }
-func isAuth(w http.ResponseWriter, r *http.Request)        {}
+func IsAuth(w http.ResponseWriter, r *http.Request)        {
+	utils.WriteJson(w, http.StatusOK, "")
+}
 func sendResetOTP(w http.ResponseWriter, r *http.Request)  {}
 func resetPassword(w http.ResponseWriter, r *http.Request) {}
 func getUserData(w http.ResponseWriter, r *http.Request)   {}
