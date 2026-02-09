@@ -23,7 +23,8 @@ type LoginRequest struct {
 	Password string `json: "Password"`
 }
 type otpREQ struct {
-	Otp string `json:"otp"`
+	Otp      string `json:"otp"`
+	Password string `json:"password"`
 }
 type Response struct {
 	Message string `json:"message"`
@@ -254,7 +255,54 @@ func SendResetOTP(w http.ResponseWriter, r *http.Request) {
 	utils.SendOTPMail(email, user.Name, user.ResetOTP)
 
 }
-func ResetPassword(w http.ResponseWriter, r *http.Request) {}
+func ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var req otpREQ
+
+	err := utils.ParseJSON(r, &req)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	token, _ := r.Cookie("token")
+	userId, err := utils.UserId(token.Value, []byte(jwtSecret))
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	user, err := utils.GetUserByID(userId)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	if user.ResetOTP != req.Otp || user.ResetOTP == "" {
+		res := Response{
+			Message: "invalid otp",
+			Success: false,
+		}
+		utils.WriteJson(w, http.StatusUnauthorized, res)
+		return
+	}
+	if user.ResetOTPExpireAt < time.Now().UnixMilli() {
+		res := Response{
+			Message: "otp expired",
+			Success: false,
+		}
+		utils.WriteJson(w, http.StatusUnauthorized, res)
+		return
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	user.Password = string(hashedPassword)
+	db.DB.Save(user)
+	res := Response{
+		Message: "password changed successfully",
+		Success: true,
+	}
+	utils.WriteJson(w, http.StatusUnauthorized, res)
+}
 func getUserData(w http.ResponseWriter, r *http.Request)   {}
 func updateProfile(w http.ResponseWriter, r *http.Request) {}
 func googleAuth(w http.ResponseWriter, r *http.Request)    {}
