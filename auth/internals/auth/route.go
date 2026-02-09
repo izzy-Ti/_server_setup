@@ -1,6 +1,11 @@
 package auth
 
-import "github.com/gorilla/mux"
+import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/izzy-Ti/_server_setup/auth/internals/Middleware"
+)
 
 func AuthRoutes(r *mux.Router) {
 	userRouter := r.PathPrefix("/user").Subrouter()
@@ -9,4 +14,5 @@ func AuthRoutes(r *mux.Router) {
 	userRouter.HandleFunc("/logout", Logout).Methods("POST")
 	userRouter.HandleFunc("/sendotp", SendVerifyOTP).Methods("POST")
 	userRouter.HandleFunc("/verifyotp", VerifyOTP).Methods("POST")
+	userRouter.Handle("/auth", Middleware.IsAuth(http.HandlerFunc(AuthUser))).Methods("POST")
 }

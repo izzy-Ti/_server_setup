@@ -26,7 +26,8 @@ type otpREQ struct {
 	Otp string `json:"otp"`
 }
 type Response struct {
-	Message string `json:"Token"`
+	Message string `json:"message"`
+	Success bool   `json:"success"`
 }
 
 var jwtSecret = []byte(os.Getenv("JWT_KEY"))
@@ -89,7 +90,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := Response{Message: "Registration successful"}
+	res := "login Successfully"
+	resp := Response{
+		Message: res,
+		Success: true,
+	}
 	utils.WriteJson(w, http.StatusOK, resp)
 
 }
@@ -137,6 +142,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	res := "login Successfully"
 	resp := Response{
 		Message: res,
+		Success: true,
 	}
 	utils.WriteJson(w, http.StatusOK, resp)
 }
@@ -147,7 +153,11 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		Path:   "/",
 		MaxAge: -1,
 	})
-	utils.WriteJson(w, http.StatusOK, "Logout successfull")
+	res := Response{
+		Message: "Logout successful",
+		Success: true,
+	}
+	utils.WriteJson(w, http.StatusOK, res)
 }
 func SendVerifyOTP(w http.ResponseWriter, r *http.Request) {
 	expiresAt := time.Now().Add(24 * time.Hour).UnixMilli()
@@ -171,9 +181,11 @@ func SendVerifyOTP(w http.ResponseWriter, r *http.Request) {
 	db.DB.Save(user)
 
 	utils.SendOTPMail(user.Email, user.Name, user.VerifyOTP)
-	utils.WriteJson(w, http.StatusOK, map[string]string{
-		"message": "OTP sent successfully",
-	})
+	res := Response{
+		Message: "OTP sent successfully",
+		Success: true,
+	}
+	utils.WriteJson(w, http.StatusOK, res)
 }
 func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	var req otpREQ
@@ -209,14 +221,19 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	user.OTPExpireAt = 0
 	user.IsAccVerified = true
 	db.DB.Save(user)
+	res := Response{
+		Message: "OTP sent successfully",
+		Success: true,
+	}
 
-	utils.WriteJson(w, http.StatusOK, "OTP verified successfully")
+	utils.WriteJson(w, http.StatusOK, res)
 }
-func IsAuth(w http.ResponseWriter, r *http.Request)        {
-	utils.WriteJson(w, http.StatusOK, "")
+func AuthUser(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value("user").(*models.User)
+	utils.WriteJson(w, http.StatusOK, user)
 }
-func sendResetOTP(w http.ResponseWriter, r *http.Request)  {}
-func resetPassword(w http.ResponseWriter, r *http.Request) {}
+func SendResetOTP(w http.ResponseWriter, r *http.Request)  {}
+func ResetPassword(w http.ResponseWriter, r *http.Request) {}
 func getUserData(w http.ResponseWriter, r *http.Request)   {}
 func updateProfile(w http.ResponseWriter, r *http.Request) {}
 func googleAuth(w http.ResponseWriter, r *http.Request)    {}
