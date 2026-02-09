@@ -232,7 +232,28 @@ func AuthUser(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value("user").(*models.User)
 	utils.WriteJson(w, http.StatusOK, user)
 }
-func SendResetOTP(w http.ResponseWriter, r *http.Request)  {}
+func SendResetOTP(w http.ResponseWriter, r *http.Request) {
+	expiresAt := time.Now().Add(24 * time.Hour).UnixMilli()
+	token, _ := r.Cookie("token")
+	userId, err := utils.UserId(token.Value, []byte(jwtSecret))
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	user, err := utils.GetUserByID(userId)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+	email := user.Email
+	user.ResetOTP = utils.GenerateOTP()
+	user.ResetOTPExpireAt = int64(expiresAt)
+
+	db.DB.Save(user)
+
+	utils.SendOTPMail(email, user.Name, user.ResetOTP)
+
+}
 func ResetPassword(w http.ResponseWriter, r *http.Request) {}
 func getUserData(w http.ResponseWriter, r *http.Request)   {}
 func updateProfile(w http.ResponseWriter, r *http.Request) {}

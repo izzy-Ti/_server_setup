@@ -14,5 +14,6 @@ func AuthRoutes(r *mux.Router) {
 	userRouter.HandleFunc("/logout", Logout).Methods("POST")
 	userRouter.HandleFunc("/sendotp", SendVerifyOTP).Methods("POST")
 	userRouter.HandleFunc("/verifyotp", VerifyOTP).Methods("POST")
+	userRouter.HandleFunc("/sendresetotp", SendResetOTP).Methods("POST")
 	userRouter.Handle("/auth", Middleware.IsAuth(http.HandlerFunc(AuthUser))).Methods("POST")
 }
